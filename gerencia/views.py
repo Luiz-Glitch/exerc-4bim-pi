@@ -17,9 +17,11 @@ def inicio_gerencia(request):
     else:
         categorias = Categoria.objects.filter(Q(nome__icontains=search_query))
 
+    categorias = categorias.order_by('nome')
+
     contexto = {
         'categorias': categorias,
-        'search_query': search_query,  # Pass search_query to the context
+        'search_query': search_query,
     }
     
     return render(request, 'categoria/index.html', contexto)
