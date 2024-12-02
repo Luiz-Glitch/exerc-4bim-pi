@@ -18,7 +18,7 @@ def login_view(request):
         
         if user is not None:
             login(request, user)  # Loga o usuário
-            return redirect('gerencia:gerencia_inicial')  # Redireciona após login
+            return redirect('gerencia:inicio_gerencia')  # Redireciona após login
         else:
             messages.error(request, 'Usuário ou senha inválidos.')
 

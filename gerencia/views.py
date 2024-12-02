@@ -21,7 +21,7 @@ def inicio_gerencia(request):
         'categorias': categorias,
     }
     
-    return render(request, 'gerencia/index.html', contexto)
+    return render(request, 'categoria/index.html', contexto)
 
 @login_required
 def editar_categoria(request, id):
@@ -37,7 +37,7 @@ def editar_categoria(request, id):
     contexto = {
         'form': form
     }
-    return render(request, 'gerencia/editar_categoria.html', contexto)
+    return render(request, 'gerencia/cadastro_categoria.html', contexto)
 
 @login_required
 def remover_categoria(request, id):

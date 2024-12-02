@@ -1,12 +1,11 @@
-
 {% extends 'base.html' %}
 {% block parte_central %}
-<div class="container">
-    <h2>Register Category</h2>
+<div class="container"></div>
+    <h2>Registrar Categoria</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary mb-4">Salvar</button>
     </form>
 </div>
 {% endblock %}
