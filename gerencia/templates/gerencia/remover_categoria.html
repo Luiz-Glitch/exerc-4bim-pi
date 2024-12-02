@@ -1,0 +1,13 @@
+
+{% extends 'base.html' %}
+{% block parte_central %}
+<div class="container">
+    <h2>Remove Category</h2>
+    <p>Are you sure you want to remove the category "{{ categoria.nome }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Remove</button>
+        <a href="{% url 'gerencia:inicio_gerencia' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

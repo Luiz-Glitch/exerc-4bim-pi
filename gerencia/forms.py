@@ -44,4 +44,12 @@ class NoticiaFilterForm(forms.Form):
         label='Categoria',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-  
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nome']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
