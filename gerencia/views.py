@@ -3,6 +3,7 @@ from .forms import NoticiaForm, NoticiaFilterForm, CategoriaForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 from .models import Noticia, Categoria
 
@@ -32,8 +33,12 @@ def editar_categoria(request, id):
     if request.method == 'POST':
         form = CategoriaForm(request.POST, instance=categoria)
         if form.is_valid():
-            form.save()
-            return redirect('gerencia:inicio_gerencia')
+            nome = form.cleaned_data['nome']
+            if Categoria.objects.filter(nome=nome).exclude(id=id).exists():
+                form.add_error('nome', 'A categoria com este nome já existe.')
+            else:
+                form.save()
+                return redirect('gerencia:inicio_gerencia')
     else:
         form = CategoriaForm(instance=categoria)
     
@@ -59,8 +64,12 @@ def cadastrar_categoria(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('gerencia:inicio_gerencia')
+            nome = form.cleaned_data['nome']
+            if Categoria.objects.filter(nome=nome).exists():
+                form.add_error('nome', 'A categoria com este nome já existe.')
+            else:
+                form.save()
+                return redirect('gerencia:inicio_gerencia')
     else:
         form = CategoriaForm()
     
