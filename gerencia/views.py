@@ -19,6 +19,7 @@ def inicio_gerencia(request):
 
     contexto = {
         'categorias': categorias,
+        'search_query': search_query,  # Pass search_query to the context
     }
     
     return render(request, 'categoria/index.html', contexto)

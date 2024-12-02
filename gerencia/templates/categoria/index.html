@@ -19,6 +19,7 @@
                             value="{{ search_query|default:'' }}"  
                         />
                         <button class="btn btn-primary" id="button-search" type="submit">Go!</button>
+                        <a href="{% url 'gerencia:inicio_gerencia' %}" class="btn btn-secondary ms-2">Clear</a>
                     </div>
                 </form>
             </div>
