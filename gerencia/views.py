@@ -3,6 +3,7 @@ from .forms import NoticiaForm, NoticiaFilterForm, CategoriaForm
 from django.contrib import messages
 from django.db.models import Q
 from django.urls import reverse_lazy
+from django.core.paginator import Paginator
 
 from .models import Noticia, Categoria
 
@@ -25,10 +26,15 @@ def inicio_gerencia(request):
         categorias = Categoria.objects.filter(Q(nome__icontains=search_query))
 
     categorias = categorias.order_by('nome')
+    
+    paginator = Paginator(categorias, 5)
+    page = request.GET.get('page', 1)
+    categorias_paginadas = paginator.page(page)
 
     contexto = {
-        'categorias': categorias,
+        'categorias': categorias_paginadas,
         'search_query': search_query,
+        'page_obj': categorias_paginadas,
     }
     
     return render(request, 'categoria/index.html', contexto)
