@@ -1,15 +1,21 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from .forms import NoticiaForm, NoticiaFilterForm, CategoriaForm
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.contrib import messages
 from django.db.models import Q
-from django.core.exceptions import ValidationError
+from django.urls import reverse_lazy
 
 from .models import Noticia, Categoria
 
+def login_required_message(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.info(request, 'Você precisa estar logado para acessar a página solicitada.')
+            return redirect(reverse_lazy('usuarios:login'))
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 # Create your views here.
-@login_required
+@login_required_message
 def inicio_gerencia(request):
     search_query = request.GET.get('search')
 
@@ -27,7 +33,7 @@ def inicio_gerencia(request):
     
     return render(request, 'categoria/index.html', contexto)
 
-@login_required
+@login_required_message
 def editar_categoria(request, id):
     categoria = Categoria.objects.get(id=id)
     if request.method == 'POST':
@@ -47,7 +53,7 @@ def editar_categoria(request, id):
     }
     return render(request, 'gerencia/cadastro_categoria.html', contexto)
 
-@login_required
+@login_required_message
 def remover_categoria(request, id):
     categoria = Categoria.objects.get(id=id)
     if request.method == 'POST':
@@ -59,7 +65,7 @@ def remover_categoria(request, id):
     }
     return render(request, 'gerencia/remover_categoria.html', contexto)
 
-@login_required
+@login_required_message
 def cadastrar_categoria(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -78,6 +84,7 @@ def cadastrar_categoria(request):
     }
     return render(request, 'gerencia/cadastro_categoria.html', contexto)
 
+@login_required_message
 def listagem_noticia(request):
     formularioFiltro = NoticiaFilterForm(request.GET or None)
     
@@ -99,7 +106,7 @@ def listagem_noticia(request):
     }
     return render(request, 'gerencia/listagem_noticia.html',contexto)
 
-
+@login_required_message
 def cadastrar_noticia(request):
     if request.method == 'POST':
         form = NoticiaForm(request.POST, request.FILES)
@@ -114,7 +121,7 @@ def cadastrar_noticia(request):
     contexto = {'form': form}
     return render(request, 'gerencia/cadastro_noticia.html', contexto)
 
-@login_required
+@login_required_message
 def editar_noticia(request, id):
     noticia = Noticia.objects.get(id=id)
     if request.method == 'POST':
@@ -131,7 +138,6 @@ def editar_noticia(request, id):
         'form': form
     }
     return render(request, 'gerencia/cadastro_noticia.html',contexto)
-
 
 def index(request):
     categoria_nome = request.GET.get('categoria')  # Obtém o parâmetro 'categoria' da URL
@@ -156,4 +162,3 @@ def index(request):
         'search_query': search_query,
     }
     return render(request, 'gerencia/index.html', contexto)
-
