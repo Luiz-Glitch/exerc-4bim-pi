@@ -43,8 +43,8 @@ def cadastro_categoria(request):
         if form.is_valid():
             form.save()
             return redirect('gerencia:listagem_categoria')
-            
-    form = CategoriaForm()
+    else:
+        form = CategoriaForm()
     
     contexto = {
         'form': form
@@ -61,8 +61,8 @@ def editar_categoria(request, id):
         if form.is_valid():
             form.save()
             return redirect('gerencia:listagem_categoria')
-
-    form = CategoriaForm(instance=categoria)
+    else:
+        form = CategoriaForm(instance=categoria)
     
     contexto = {
         'form': form,

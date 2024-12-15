@@ -52,6 +52,12 @@ class CategoriaForm(forms.ModelForm):
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control', 'max_length': 50})
         }
+
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome')
+        if Categoria.objects.filter(nome=nome).exists():
+            raise forms.ValidationError('Categoria com este Nome já existe.')
+        return nome
         
 class CategoriaFiltroForm(forms.Form):
     nome = forms.CharField(
