@@ -1,96 +1,84 @@
+from django.shortcuts import render,redirect
+from .forms import NoticiaForm, NoticiaFilterForm
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .forms import NoticiaForm, NoticiaFilterForm, CategoriaForm
-from django.contrib import messages
-from django.db.models import Q
-from django.urls import reverse_lazy
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from .models import Noticia, Categoria
+from .forms import CategoriaForm, CategoriaFiltroForm
 
-def login_required_message(view_func):
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            messages.info(request, 'Você precisa estar logado para acessar a página solicitada.')
-            return redirect(reverse_lazy('usuarios:login'))
-        return view_func(request, *args, **kwargs)
-    return wrapper
 
 # Create your views here.
-@login_required_message
+@login_required
 def inicio_gerencia(request):
-    search_query = request.GET.get('search')
+    return render(request, 'gerencia/inicio.html')
 
-    if not search_query:
-        categorias = Categoria.objects.all()
-    else:
-        categorias = Categoria.objects.filter(Q(nome__icontains=search_query))
-
-    categorias = categorias.order_by('nome')
+@login_required
+def listagem_categoria(request):
+    formularioFiltro = CategoriaFiltroForm(request.GET or None)
+    categorias = Categoria.objects.all().order_by('nome')
     
-    paginator = Paginator(categorias, 5)
-    page = request.GET.get('page', 1)
-    categorias_paginadas = paginator.page(page)
-
+    if formularioFiltro.is_valid():
+        if formularioFiltro.cleaned_data['nome']:
+            categorias = categorias.filter(nome__icontains=formularioFiltro.cleaned_data['nome'])
+    
+    paginador = Paginator(categorias, 5)
+    num_pagina = request.GET.get('page', 1)
+    
+    pagina = paginador.get_page(num_pagina)
+    
     contexto = {
-        'categorias': categorias_paginadas,
-        'search_query': search_query,
-        'page_obj': categorias_paginadas,
+        'categorias': pagina.object_list,
+        'page_obj': pagina,
+        'formularioFiltro': formularioFiltro
     }
     
-    return render(request, 'categoria/index.html', contexto)
+    return render(request, "gerencia/listagem_categoria.html", contexto)
 
-@login_required_message
+@login_required
+def cadastro_categoria(request):
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('gerencia:listagem_categoria')
+            
+    form = CategoriaForm()
+    
+    contexto = {
+        'form': form
+    }
+    
+    return render(request, "gerencia/form_categoria.html", contexto)
+
+@login_required
 def editar_categoria(request, id):
     categoria = Categoria.objects.get(id=id)
+    
     if request.method == 'POST':
-        form = CategoriaForm(request.POST, instance=categoria)
+        form = CategoriaForm(request.POST or None, instance=categoria)
         if form.is_valid():
-            nome = form.cleaned_data['nome']
-            if Categoria.objects.filter(nome=nome).exclude(id=id).exists():
-                form.add_error('nome', 'A categoria com este nome já existe.')
-            else:
-                form.save()
-                return redirect('gerencia:inicio_gerencia')
-    else:
-        form = CategoriaForm(instance=categoria)
+            form.save()
+            return redirect('gerencia:listagem_categoria')
+
+    form = CategoriaForm(instance=categoria)
     
     contexto = {
-        'form': form
+        'form': form,
     }
-    return render(request, 'gerencia/cadastro_categoria.html', contexto)
+    
+    return render(request, "gerencia/form_categoria.html", contexto)
 
-@login_required_message
-def remover_categoria(request, id):
-    categoria = Categoria.objects.get(id=id)
+@login_required
+def excluir_categoria(request, id):
     if request.method == 'POST':
+        categoria = Categoria.objects.get(id=id)
         categoria.delete()
-        return redirect('gerencia:inicio_gerencia')
     
-    contexto = {
-        'categoria': categoria
-    }
-    return render(request, 'gerencia/remover_categoria.html', contexto)
+    return redirect('gerencia:listagem_categoria')
 
-@login_required_message
-def cadastrar_categoria(request):
-    if request.method == 'POST':
-        form = CategoriaForm(request.POST)
-        if form.is_valid():
-            nome = form.cleaned_data['nome']
-            if Categoria.objects.filter(nome=nome).exists():
-                form.add_error('nome', 'A categoria com este nome já existe.')
-            else:
-                form.save()
-                return redirect('gerencia:inicio_gerencia')
-    else:
-        form = CategoriaForm()
-    
-    contexto = {
-        'form': form
-    }
-    return render(request, 'gerencia/cadastro_categoria.html', contexto)
-
-@login_required_message
+@login_required
 def listagem_noticia(request):
     formularioFiltro = NoticiaFilterForm(request.GET or None)
     
@@ -112,7 +100,7 @@ def listagem_noticia(request):
     }
     return render(request, 'gerencia/listagem_noticia.html',contexto)
 
-@login_required_message
+@login_required
 def cadastrar_noticia(request):
     if request.method == 'POST':
         form = NoticiaForm(request.POST, request.FILES)
@@ -127,7 +115,7 @@ def cadastrar_noticia(request):
     contexto = {'form': form}
     return render(request, 'gerencia/cadastro_noticia.html', contexto)
 
-@login_required_message
+@login_required
 def editar_noticia(request, id):
     noticia = Noticia.objects.get(id=id)
     if request.method == 'POST':

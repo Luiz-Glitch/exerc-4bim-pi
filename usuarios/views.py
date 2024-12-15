@@ -9,6 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 
 def login_view(request):
+    next = request.GET.get('next')
+    
+    if next:
+        messages.info(request, "É preciso estar logado para acessar a págino anterior")
+    
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -18,7 +23,11 @@ def login_view(request):
         
         if user is not None:
             login(request, user)  # Loga o usuário
-            return redirect('gerencia:inicio_gerencia')  # Redireciona após login
+            if next:
+                return redirect(next)
+            else:
+                return redirect('gerencia:gerencia_inicial')  # Redireciona após login
+
         else:
             messages.error(request, 'Usuário ou senha inválidos.')
 
